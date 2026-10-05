@@ -1,0 +1,1 @@
+The application automatically creates customer_churn_elastic_net.pkl on first startup if the file is not present. It uses the standard Telco Customer Churn dataset and the Elastic Net pipeline configuration from the project.

@@ -1,1 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>ChurnAI | Settings</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+
+<header class="topbar">
+
+<div class="brand">
+
+<div class="brand-logo">
+🧠
+</div>
+
+<div>
+
+<div class="brand-name">
+Churn<span>AI</span>
+</div>
+
+<div class="brand-subtitle">
+Customer Analytics
+</div>
+
+</div>
+
+</div>
+
+
+<nav class="top-navigation">
+
+<a href="/">
+⌂ Home
+</a>
+
+<a href="/dashboard">
+◫ Analytics
+</a>
+
+<a href="/settings"
+class="active">
+ⓘ About
+</a>
+
+<a href="/history">
+◷ History
+</a>
+
+</nav>
+
+
+<div class="profile">
+
+<div class="theme-toggle">
+☼
+<span>●</span>
+</div>
+
+<div class="profile-icon">
+👤
+</div>
+
+</div>
+
+</header>
+
+
+
+<div class="page-layout">
+
+
+<aside class="sidebar">
+
+<div class="sidebar-menu">
+
+<a href="/" class="sidebar-link">
+<span>⌂</span>
+Home
+</a>
+
+<a href="/dashboard" class="sidebar-link">
+<span>▥</span>
+Dashboard
+</a>
+
+<a href="/history" class="sidebar-link">
+<span>◷</span>
+History
+</a>
+
+<a href="/settings"
+class="sidebar-link active">
+
+<span>⚙</span>
+Settings
+
+</a>
+
+</div>
+
+
+<div class="sidebar-bottom">
+
+<div class="sidebar-brain">
+🧠
+</div>
+
+<h3>
+Smarter Decisions
+<br>
+Better Retention
+</h3>
+
+<p>
+Predict churn. Build stronger
+customer relationships.
+</p>
+
+</div>
+
+</aside>
+
+
+
+<main class="main-content">
+
+
+<section class="dashboard-header">
+
+<div>
+
+<div class="hero-label">
+SYSTEM CONFIGURATION
+</div>
+
+<h1>
+Model <span>Settings</span>
+</h1>
+
+<p>
+Information about the deployed machine
+learning model and application.
+</p>
+
+</div>
+
+</section>
+
+
+
+<div class="settings-grid">
+
+
+<div class="settings-card">
+
+<div class="settings-icon">
+🧠
+</div>
+
+<h2>
+Machine Learning Model
+</h2>
+
+<p>
+{{ model_name }}
+</p>
+
+<div class="setting-row">
+
+<span>Model Type</span>
+
+<strong>
+Classification
+</strong>
+
+</div>
+
+
+<div class="setting-row">
+
+<span>Algorithm</span>
+
+<strong>
+Logistic Regression
+</strong>
+
+</div>
+
+
+<div class="setting-row">
+
+<span>Regularization</span>
+
+<strong>
+Elastic Net
+</strong>
+
+</div>
+
+
+<div class="setting-row">
+
+<span>Solver</span>
+
+<strong>
+SAGA
+</strong>
+
+</div>
+
+</div>
+
+
+
+<div class="settings-card">
+
+<div class="settings-icon">
+📊
+</div>
+
+<h2>
+Features
+</h2>
+
+<p>
+Customer information used by the prediction model.
+</p>
+
+
+<div class="setting-row">
+
+<span>Total Features</span>
+
+<strong>
+{{ feature_count }}
+</strong>
+
+</div>
+
+
+<div class="setting-row">
+
+<span>Numerical Features</span>
+
+<strong>
+{{ numerical_count }}
+</strong>
+
+</div>
+
+
+<div class="setting-row">
+
+<span>Categorical Features</span>
+
+<strong>
+{{ categorical_count }}
+</strong>
+
+</div>
+
+</div>
+
+
+
+<div class="settings-card">
+
+<div class="settings-icon">
+⚙
+</div>
+
+<h2>
+Preprocessing
+</h2>
+
+<p>
+Data preparation performed before prediction.
+</p>
+
+
+<div class="setting-row">
+
+<span>Numerical Scaling</span>
+
+<strong>
+StandardScaler
+</strong>
+
+</div>
+
+
+<div class="setting-row">
+
+<span>Categorical Encoding</span>
+
+<strong>
+OneHotEncoder
+</strong>
+
+</div>
+
+
+<div class="setting-row">
+
+<span>Unknown Categories</span>
+
+<strong>
+Handled
+</strong>
+
+</div>
+
+</div>
+
+
+
+<div class="settings-card">
+
+<div class="settings-icon">
+✓
+</div>
+
+<h2>
+Application Status
+</h2>
+
+<p>
+Current system status.
+</p>
+
+
+<div class="setting-row">
+
+<span>Flask Application</span>
+
+<strong class="online">
+● Running
+</strong>
+
+</div>
+
+
+<div class="setting-row">
+
+<span>Prediction API</span>
+
+<strong class="online">
+● Available
+</strong>
+
+</div>
+
+
+<div class="setting-row">
+
+<span>Health Check</span>
+
+<strong>
+/health
+</strong>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="about-card">
+
+<h2>
+About ChurnAI
+</h2>
+
+<p>
+ChurnAI is a customer churn prediction system
+developed using machine learning. It analyzes
+customer demographic, service and billing
+information to estimate the probability that
+a customer will leave the service.
+</p>
+
+<div class="about-buttons">
+
+<a href="/" class="action-button">
+Start Prediction
+</a>
+
+<a href="/dashboard"
+class="action-button secondary">
+Open Dashboard
+</a>
+
+</div>
+
+</div>
+
+
+</main>
+
+</div>
+
+
+
+<footer class="footer">
+
+<div>
+Customer Churn Prediction System
+</div>
+
+<div>
+Built with ❤️ using Flask
+</div>
+
+</footer>
+
+
+</body>
+</html>

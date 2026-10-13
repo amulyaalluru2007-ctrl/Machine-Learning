@@ -1,133 +1,416 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChurnAI | Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>ChurnAI | Dashboard</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='style.css') }}">
+
 </head>
+
 <body>
 
+
 <header class="topbar">
-    <a class="brand" href="/">🧠 Churn<span>AI</span></a>
-    <nav>
-        <a href="/">Home</a>
-        <a class="active" href="/dashboard">Dashboard</a>
-        <a href="/history">History</a>
-        <a href="/settings">Settings</a>
-    </nav>
-</header>
 
-<div class="page-layout">
-    <aside class="sidebar">
-        <h3>Customer Analytics</h3>
-        <a href="/">⌂ Home</a>
-        <a class="active" href="/dashboard">▥ Dashboard</a>
-        <a href="/history">◷ History</a>
-        <a href="/settings">⚙ Settings</a>
+<div class="brand">
 
-        <div class="sidebar-bottom">
-            <h3>Smarter Decisions</h3>
-            <p>Predict churn. Build stronger customer relationships.</p>
-        </div>
-    </aside>
-
-    <main class="main-content">
-        <section class="hero">
-            <p class="eyebrow">ANALYTICS DASHBOARD</p>
-            <h1>Churn <span>Dashboard</span></h1>
-            <p>Review predictions and compare customers across risk categories.</p>
-        </section>
-
-        <section class="stats-grid">
-            <div class="stat-card">
-                <p>Total Predictions</p>
-                <h2>{{ total_predictions }}</h2>
-            </div>
-
-            <div class="stat-card">
-                <p>Likely to Churn</p>
-                <h2>{{ churn_count }}</h2>
-            </div>
-
-            <div class="stat-card">
-                <p>Not Likely to Churn</p>
-                <h2>{{ safe_count }}</h2>
-            </div>
-
-            <div class="stat-card">
-                <p>Average Probability</p>
-                <h2>{{ average_probability }}%</h2>
-            </div>
-        </section>
-
-        <section class="panel">
-            <h2>Customer Risk Distribution</h2>
-            <p class="muted">Customers are grouped according to their predicted churn probability.</p>
-
-            <div class="risk-summary-grid">
-                <div class="risk-summary-card low-risk-card">
-                    <span class="dot green"></span>
-                    <div>
-                        <p>Low Risk</p>
-                        <h2>{{ low_risk_count }}</h2>
-                        <small>Probability below 30%</small>
-                    </div>
-                </div>
-
-                <div class="risk-summary-card medium-risk-card">
-                    <span class="dot yellow"></span>
-                    <div>
-                        <p>Medium Risk</p>
-                        <h2>{{ medium_risk_count }}</h2>
-                        <small>Probability from 30% to below 60%</small>
-                    </div>
-                </div>
-
-                <div class="risk-summary-card high-risk-card">
-                    <span class="dot red"></span>
-                    <div>
-                        <p>High Risk</p>
-                        <h2>{{ high_risk_count }}</h2>
-                        <small>Probability of 60% or above</small>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="panel">
-            <h2>Model Status</h2>
-
-            <div class="status-row">
-                <span>Model</span>
-                <strong>Elastic Net Logistic Regression</strong>
-            </div>
-
-            <div class="status-row">
-                <span>Status</span>
-                <strong class="online">● Online</strong>
-            </div>
-
-            <div class="status-row">
-                <span>Features</span>
-                <strong>19</strong>
-            </div>
-
-            <div class="status-row">
-                <span>Churn Rate in Predictions</span>
-                <strong>{{ churn_rate }}%</strong>
-            </div>
-        </section>
-
-        <div class="quick-actions">
-            <a href="/" class="primary-button">+ New Prediction</a>
-            <a href="/history" class="secondary-button">View History</a>
-        </div>
-    </main>
+<div class="brand-logo">
+🧠
 </div>
 
-<footer class="footer">Customer Churn Prediction System · Built with Flask</footer>
+<div>
+
+<div class="brand-name">
+Churn<span>AI</span>
+</div>
+
+<div class="brand-subtitle">
+Customer Analytics
+</div>
+
+</div>
+
+</div>
+
+
+<nav class="top-navigation">
+
+<a href="/">
+⌂ Home
+</a>
+
+<a href="/dashboard" class="active">
+◫ Analytics
+</a>
+
+<a href="/settings">
+ⓘ About
+</a>
+
+<a href="/history">
+◷ History
+</a>
+
+</nav>
+
+
+<div class="profile">
+
+<div class="theme-toggle">
+☼
+<span>●</span>
+</div>
+
+<div class="profile-icon">
+👤
+</div>
+
+</div>
+
+</header>
+
+
+
+<div class="page-layout">
+
+
+<aside class="sidebar">
+
+<div class="sidebar-menu">
+
+<a href="/" class="sidebar-link">
+<span>⌂</span>
+Home
+</a>
+
+<a href="/dashboard"
+class="sidebar-link active">
+
+<span>▥</span>
+Dashboard
+
+</a>
+
+<a href="/history"
+class="sidebar-link">
+
+<span>◷</span>
+History
+
+</a>
+
+<a href="/settings"
+class="sidebar-link">
+
+<span>⚙</span>
+Settings
+
+</a>
+
+</div>
+
+
+<div class="sidebar-bottom">
+
+<div class="sidebar-brain">
+🧠
+</div>
+
+<h3>
+Smarter Decisions
+<br>
+Better Retention
+</h3>
+
+<p>
+Predict churn. Build stronger
+customer relationships.
+</p>
+
+</div>
+
+</aside>
+
+
+
+<main class="main-content">
+
+
+<section class="dashboard-header">
+
+<div>
+
+<div class="hero-label">
+ANALYTICS DASHBOARD
+</div>
+
+<h1>
+Churn <span>Dashboard</span>
+</h1>
+
+<p>
+Monitor customer churn predictions
+and model activity.
+</p>
+
+</div>
+
+</section>
+
+
+
+<div class="stats-grid">
+
+
+<div class="stat-card">
+
+<div class="stat-icon">
+📊
+</div>
+
+<div>
+
+<p>Total Predictions</p>
+
+<h2>
+{{ total_predictions }}
+</h2>
+
+</div>
+
+</div>
+
+
+
+<div class="stat-card">
+
+<div class="stat-icon">
+⚠
+</div>
+
+<div>
+
+<p>Likely to Churn</p>
+
+<h2>
+{{ churn_count }}
+</h2>
+
+</div>
+
+</div>
+
+
+
+<div class="stat-card">
+
+<div class="stat-icon">
+✓
+</div>
+
+<div>
+
+<p>Not Likely to Churn</p>
+
+<h2>
+{{ safe_count }}
+</h2>
+
+</div>
+
+</div>
+
+
+
+<div class="stat-card">
+
+<div class="stat-icon">
+◉
+</div>
+
+<div>
+
+<p>Average Probability</p>
+
+<h2>
+{{ average_probability }}%
+</h2>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="dashboard-grid">
+
+
+<div class="dashboard-card">
+
+<h2>
+Prediction Overview
+</h2>
+
+<p class="card-description">
+Current prediction distribution.
+</p>
+
+
+<div class="progress-item">
+
+<div class="progress-label">
+
+<span>Churn Rate</span>
+
+<strong>
+{{ churn_rate }}%
+</strong>
+
+</div>
+
+<div class="progress">
+
+<div class="progress-bar"
+style="width: {{ churn_rate }}%">
+</div>
+
+</div>
+
+</div>
+
+
+<div class="overview-box">
+
+<div>
+
+<strong>
+{{ churn_count }}
+</strong>
+
+<span>
+Customers likely to churn
+</span>
+
+</div>
+
+<div>
+
+<strong>
+{{ safe_count }}
+</strong>
+
+<span>
+Customers likely to stay
+</span>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="dashboard-card">
+
+<h2>
+Model Status
+</h2>
+
+<p class="card-description">
+Current machine learning system.
+</p>
+
+
+<div class="status-row">
+
+<span>Model</span>
+
+<strong>
+Elastic Net Logistic Regression
+</strong>
+
+</div>
+
+
+<div class="status-row">
+
+<span>Status</span>
+
+<strong class="online">
+● Online
+</strong>
+
+</div>
+
+
+<div class="status-row">
+
+<span>Features</span>
+
+<strong>
+19
+</strong>
+
+</div>
+
+
+<div class="status-row">
+
+<span>Regularization</span>
+
+<strong>
+Elastic Net
+</strong>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="quick-actions">
+
+<a href="/" class="action-button">
+✨ New Prediction
+</a>
+
+<a href="/history" class="action-button secondary">
+◷ View History
+</a>
+
+</div>
+
+
+</main>
+
+</div>
+
+
+<footer class="footer">
+
+<div>
+Customer Churn Prediction System
+</div>
+
+<div>
+Built with ❤️ using Flask
+</div>
+
+</footer>
+
 
 </body>
 </html>

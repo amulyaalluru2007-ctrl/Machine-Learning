@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import numpy as np
 import joblib
+
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.linear_model import LogisticRegression
@@ -15,14 +16,14 @@ MODEL_FILE = "customer_churn_elastic_net.pkl"
 DATA_FILE = "WA_Fn-UseC_-Telco-Customer-Churn.csv"
 HISTORY_FILE = "prediction_history.csv"
 
-numerical_features = [
+NUMERICAL_FEATURES = [
     "SeniorCitizen",
     "tenure",
     "MonthlyCharges",
     "TotalCharges"
 ]
 
-categorical_features = [
+CATEGORICAL_FEATURES = [
     "gender",
     "Partner",
     "Dependents",
@@ -40,7 +41,7 @@ categorical_features = [
     "PaymentMethod"
 ]
 
-features = numerical_features + categorical_features
+FEATURES = NUMERICAL_FEATURES + CATEGORICAL_FEATURES
 
 DATA_URLS = [
     "https://raw.githubusercontent.com/Giskard-AI/examples/main/datasets/WA_Fn-UseC_-Telco-Customer-Churn.csv",
@@ -48,12 +49,27 @@ DATA_URLS = [
 ]
 
 
-# ============================================================
+# --------------------------------------------------
+# RISK CLASSIFICATION
+# --------------------------------------------------
+
+def get_risk_level(probability):
+    if probability < 30:
+        return "Low Risk"
+    elif probability < 60:
+        return "Medium Risk"
+    return "High Risk"
+
+
+# --------------------------------------------------
 # TRAIN THE MACHINE LEARNING MODEL
-# ============================================================
+# --------------------------------------------------
 
 def train_model():
-    if not os.path.exists(DATA_FILE):
+
+    if os.path.exists(DATA_FILE):
+        df = pd.read_csv(DATA_FILE)
+    else:
         last_error = None
 
         for url in DATA_URLS:
@@ -61,34 +77,39 @@ def train_model():
                 df = pd.read_csv(url)
                 df.to_csv(DATA_FILE, index=False)
                 break
-            except Exception as e:
-                last_error = e
+            except Exception as error:
+                last_error = error
         else:
             raise RuntimeError(
-                f"Could not download dataset: {last_error}"
+                f"Dataset download failed: {last_error}"
             )
-    else:
-        df = pd.read_csv(DATA_FILE)
 
-    df["TotalCharges"] = df["TotalCharges"].replace(" ", np.nan)
     df["TotalCharges"] = pd.to_numeric(
-        df["TotalCharges"], errors="coerce"
+        df["TotalCharges"].replace(" ", np.nan),
+        errors="coerce"
     )
+
     df["TotalCharges"] = df["TotalCharges"].fillna(
         df["TotalCharges"].median()
     )
 
-    model_df = df[features + ["Churn"]].copy()
-    X = model_df[features]
-    y = model_df["Churn"].map({"No": 0, "Yes": 1})
+    X = df[FEATURES].copy()
+    y = df["Churn"].map({"No": 0, "Yes": 1})
 
     preprocessor = ColumnTransformer([
-        ("num", StandardScaler(), numerical_features),
-        ("cat", OneHotEncoder(handle_unknown="ignore"),
-         categorical_features)
+        (
+            "numerical",
+            StandardScaler(),
+            NUMERICAL_FEATURES
+        ),
+        (
+            "categorical",
+            OneHotEncoder(handle_unknown="ignore"),
+            CATEGORICAL_FEATURES
+        )
     ])
 
-    model = LogisticRegression(
+    classifier = LogisticRegression(
         penalty="elasticnet",
         solver="saga",
         l1_ratio=0.5,
@@ -99,7 +120,7 @@ def train_model():
 
     pipeline = Pipeline([
         ("preprocessor", preprocessor),
-        ("model", model)
+        ("model", classifier)
     ])
 
     pipeline.fit(X, y)
@@ -108,11 +129,12 @@ def train_model():
     return pipeline
 
 
-# ============================================================
+# --------------------------------------------------
 # LOAD MODEL
-# ============================================================
+# --------------------------------------------------
 
 def get_model():
+
     if os.path.exists(MODEL_FILE):
         return joblib.load(MODEL_FILE)
 
@@ -122,126 +144,103 @@ def get_model():
 model = get_model()
 
 
-# ============================================================
-# CLASSIFY LOW, MEDIUM AND HIGH RISK
-# ============================================================
+# --------------------------------------------------
+# PREDICTION HISTORY
+# --------------------------------------------------
 
-def get_risk_level(probability):
-    """
-    Probability must be expressed as a percentage from 0 to 100.
-    """
-    if probability < 30:
-        return "Low Risk"
-    elif probability < 60:
-        return "Medium Risk"
-    else:
-        return "High Risk"
+def get_history():
+
+    if not os.path.exists(HISTORY_FILE):
+        return pd.DataFrame(
+            columns=["Prediction", "Probability", "Risk"]
+        )
+
+    history = pd.read_csv(HISTORY_FILE)
+
+    if "Probability" not in history.columns:
+        history["Probability"] = 0.0
+
+    history["Probability"] = pd.to_numeric(
+        history["Probability"],
+        errors="coerce"
+    ).fillna(0.0)
+
+    # Always calculate risk from the stored probability.
+    # This also corrects older history records.
+    history["Risk"] = history["Probability"].apply(
+        get_risk_level
+    )
+
+    return history
 
 
-# ============================================================
-# SAVE PREDICTIONS
-# ============================================================
+def save_prediction(result, probability, risk):
 
-def save_prediction(result, probability, risk_level):
-    new_record = pd.DataFrame([{
+    record = pd.DataFrame([{
         "Prediction": result,
         "Probability": round(probability, 2),
-        "Risk": risk_level
+        "Risk": risk
     }])
 
     if os.path.exists(HISTORY_FILE):
-        old_history = pd.read_csv(HISTORY_FILE)
+        history = get_history()
         history = pd.concat(
-            [old_history, new_record],
+            [history, record],
             ignore_index=True
         )
     else:
-        history = new_record
+        history = record
 
     history.to_csv(HISTORY_FILE, index=False)
 
 
-# ============================================================
-# LOAD PREDICTION HISTORY
-# ============================================================
-
-def get_history():
-    if os.path.exists(HISTORY_FILE):
-        history = pd.read_csv(HISTORY_FILE)
-
-        if "Risk" not in history.columns:
-            history["Risk"] = history["Probability"].apply(
-                lambda value: get_risk_level(float(value))
-            )
-        else:
-            history["Risk"] = history.apply(
-                lambda row: (
-                    row["Risk"]
-                    if pd.notna(row["Risk"])
-                    and str(row["Risk"]).strip()
-                    else get_risk_level(float(row["Probability"]))
-                ),
-                axis=1
-            )
-
-        return history
-
-    return pd.DataFrame(
-        columns=["Prediction", "Probability", "Risk"]
-    )
-
-
-# ============================================================
-# HOME AND CUSTOMER PREDICTION
-# ============================================================
+# --------------------------------------------------
+# HOME AND PREDICTION
+# --------------------------------------------------
 
 @app.route("/", methods=["GET", "POST"])
 def home():
+
     result = None
     probability = None
     risk_level = None
     error = None
 
-    form_data = (
-        request.form.to_dict()
-        if request.method == "POST"
-        else {}
-    )
+    form_data = {}
 
     if request.method == "POST":
+        form_data = request.form.to_dict()
+
         try:
             data = {
-                "SeniorCitizen": int(request.form["SeniorCitizen"]),
-                "tenure": float(request.form["tenure"]),
+                "SeniorCitizen": int(
+                    request.form["SeniorCitizen"]
+                ),
+                "tenure": float(
+                    request.form["tenure"]
+                ),
                 "MonthlyCharges": float(
                     request.form["MonthlyCharges"]
                 ),
                 "TotalCharges": float(
                     request.form["TotalCharges"]
-                ),
-                "gender": request.form["gender"],
-                "Partner": request.form["Partner"],
-                "Dependents": request.form["Dependents"],
-                "PhoneService": request.form["PhoneService"],
-                "MultipleLines": request.form["MultipleLines"],
-                "InternetService": request.form["InternetService"],
-                "OnlineSecurity": request.form["OnlineSecurity"],
-                "OnlineBackup": request.form["OnlineBackup"],
-                "DeviceProtection": request.form["DeviceProtection"],
-                "TechSupport": request.form["TechSupport"],
-                "StreamingTV": request.form["StreamingTV"],
-                "StreamingMovies": request.form["StreamingMovies"],
-                "Contract": request.form["Contract"],
-                "PaperlessBilling": request.form["PaperlessBilling"],
-                "PaymentMethod": request.form["PaymentMethod"]
+                )
             }
 
-            input_df = pd.DataFrame([data], columns=features)
+            for feature in CATEGORICAL_FEATURES:
+                data[feature] = request.form[feature]
 
-            prediction = int(model.predict(input_df)[0])
+            input_data = pd.DataFrame(
+                [data],
+                columns=FEATURES
+            )
+
+            prediction = int(
+                model.predict(input_data)[0]
+            )
 
             probability = float(
-                model.predict_proba(input_df)[0][1]
+                model.predict_proba(input_data)[0][1]
             ) * 100
 
             if prediction == 1:
@@ -257,8 +256,8 @@ def home():
                 risk_level
             )
 
-        except Exception as e:
-            error = str(e)
+        except Exception as exception:
+            error = str(exception)
 
     return render_template(
         "index.html",
@@ -270,21 +269,22 @@ def home():
     )
 
 
-# ============================================================
-# ANALYTICS DASHBOARD
-# ============================================================
+# --------------------------------------------------
+# DASHBOARD
+# --------------------------------------------------
 
 @app.route("/dashboard")
 def dashboard():
+
     history = get_history()
     total_predictions = len(history)
 
-    if total_predictions > 0:
-        churn_count = len(
-            history[
+    if total_predictions:
+        churn_count = int(
+            (
                 history["Prediction"]
                 == "Customer Likely to Churn"
-            ]
+            ).sum()
         )
 
         safe_count = total_predictions - churn_count
@@ -294,19 +294,19 @@ def dashboard():
         )
 
         churn_rate = round(
-            (churn_count / total_predictions) * 100, 2
+            churn_count / total_predictions * 100, 2
         )
 
-        risk_counts = history["Probability"].apply(
-            lambda value: get_risk_level(float(value))
-        ).value_counts()
+        risk_counts = history["Risk"].value_counts()
 
         low_risk_count = int(
             risk_counts.get("Low Risk", 0)
         )
+
         medium_risk_count = int(
             risk_counts.get("Medium Risk", 0)
         )
+
         high_risk_count = int(
             risk_counts.get("High Risk", 0)
         )
@@ -333,14 +333,15 @@ def dashboard():
     )
 
 
-# ============================================================
-# PREDICTION HISTORY
-# ============================================================
+# --------------------------------------------------
+# HISTORY PAGE
+# --------------------------------------------------
 
 @app.route("/history")
-def history():
-    history_data = get_history()
-    records = history_data.to_dict(orient="records")
+def history_page():
+
+    history = get_history()
+    records = history.to_dict(orient="records")
 
     return render_template(
         "history.html",
@@ -348,38 +349,41 @@ def history():
     )
 
 
-# ============================================================
-# SETTINGS
-# ============================================================
+# --------------------------------------------------
+# SETTINGS PAGE
+# --------------------------------------------------
 
 @app.route("/settings")
 def settings():
+
     return render_template(
         "settings.html",
-        model_name="Elastic Net Regularized Logistic Regression",
-        feature_count=len(features),
-        numerical_count=len(numerical_features),
-        categorical_count=len(categorical_features)
+        model_name="Elastic Net Logistic Regression",
+        feature_count=len(FEATURES),
+        numerical_count=len(NUMERICAL_FEATURES),
+        categorical_count=len(CATEGORICAL_FEATURES)
     )
 
 
-# ============================================================
+# --------------------------------------------------
 # HEALTH CHECK
-# ============================================================
+# --------------------------------------------------
 
 @app.route("/health")
 def health():
+
     return {
         "status": "ok",
         "model": "Elastic Net Logistic Regression"
     }
 
 
-# ============================================================
+# --------------------------------------------------
 # RUN APPLICATION
-# ============================================================
+# --------------------------------------------------
 
 if __name__ == "__main__":
+
     port = int(os.environ.get("PORT", 5000))
 
     app.run(
